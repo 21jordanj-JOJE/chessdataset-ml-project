@@ -110,20 +110,3 @@ Models compared:
 - `LogisticRegression`
 
 The comparison is stored in `outputs/tables/RQ7_model.csv` and visualized in `outputs/figures/RQ7_figure.pdf`.
-
-## 🎯 Notes on Dynamic Visualization
-
-The notebook itself uses Matplotlib charts to create visual output, while this README includes an animated process diagram using Mermaid. If you want a richer dynamic dashboard, consider converting notebook figures into interactive charts with Plotly or Dash.
-
-## 📝 Recommended Next Steps
-
-- add richer feature engineering (e.g. material balance, board control metrics)
-- incorporate ELO percentile or rating buckets
-- build a dedicated interactive dashboard for move-by-move preview
-- extend modeling to multiclass outcomes including draws
-
----
-
-## 📌 Contact
-
-If you want, I can also generate a runnable Python script version of this notebook and add an interactive dashboard section to the README.
