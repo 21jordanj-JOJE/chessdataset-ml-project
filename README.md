@@ -1,112 +1,133 @@
 # Chess Dataset ML Project
 
-A data science and machine learning exploration of a large chess game dataset, built from the notebook `Jordan Chess data sets.ipynb`.
+A data science and machine learning exploration of a large chess game dataset (~20,000 games) with statistical rigor and model interpretability.
 
-## 🚀 Project Summary
+## Project Summary
 
-This project analyzes chess game outcomes, opening strategies, time controls, and model performance using a Kaggle chess game dataset.
+Analyzes chess game outcomes, opening strategies, time controls, and model performance.
 
 Key goals:
+
 - Measure how rating difference influences win probability
-- Identify openings with the highest White win rate
+- Identify openings with the highest White win rate (with significance testing)
 - Compare game duration across victory types
-- Analyze the effect of rated vs non-rated play
+- Analyze the effect of rated vs non-rated play (with hypothesis tests)
 - Explore time control effects on game length
 - Evaluate opening depth impact on White performance
-- Train and compare classification models on game outcomes
+- Train, tune, and interpret classification models on game outcomes
 
-## 📂 Notebook and Data
+## Project Structure
 
-- Notebook: `Jordan Chess data sets.ipynb`
-- Raw dataset path used in notebook: `/kaggle/input/datasets/jordanjesudas/chess-game-dataset/games.csv`
-- Generated output directories:
-  - `outputs/tables/`
-  - `outputs/figures/`
+```
+├── Dataset/
+│   └── games.csv                   # Raw dataset (~20K rows, 16 columns)
+├── src/chess_ml/                   # Modular Python package
+│   ├── __init__.py                 # Public API
+│   ├── config.py                   # Paths, constants, thresholds
+│   ├── data.py                     # Load, parse, and preprocessing
+│   ├── analysis.py                 # RQ1–RQ6 + ECO analysis functions
+│   ├── modeling.py                 # ML pipeline (RQ7) + tuning
+│   └── plotting.py                 # All visualization functions
+├── chess_analysis.py               # End-to-end runner script
+├── notebooks/
+│   └── chess_analysis.ipynb        # Interactive Jupyter notebook
+├── outputs/
+│   ├── tables/                     # Generated CSV tables
+│   └── figures/                    # Generated PDF figures
+├── requirements.txt
+├── .gitignore
+└── README.md
+```
 
-## 📊 Analysis Workflow
+## Setup
+
+### Option 1: Run locally
+
+```bash
+pip install -r requirements.txt
+python chess_analysis.py
+```
+
+The script automatically detects the dataset at the Kaggle path or falls back to `Dataset/games.csv`.
+
+### Option 2: Run in Jupyter
+
+```bash
+pip install -r requirements.txt
+jupyter notebook notebooks/chess_analysis.ipynb
+```
+
+### Option 3: Run on Kaggle
+
+Upload to Kaggle and open `chess_analysis.ipynb`. The default dataset path is pre-configured.
+
+## Analysis Workflow
 
 ```mermaid
 flowchart LR
     A[Load Chess Dataset] --> B[Clean and Prepare Data]
-    B --> C[Compute Rating Difference Metrics]
-    B --> D[Rank Openings by Win Rate]
-    B --> E[Analyze Game Duration]
-    B --> F[Compare Rated vs Non-rated]
-    B --> G[Measure Time Control Effects]
-    B --> H[Evaluate Opening Depth]
-    B --> I[Train and Compare Models]
-    C --> J[Save RQ1 Outputs]
-    D --> K[Save RQ2 Outputs]
-    E --> L[Save RQ3 Outputs]
-    F --> M[Save RQ4 Outputs]
-    G --> N[Save RQ5 Outputs]
-    H --> O[Save RQ6 Outputs]
-    I --> P[Save RQ7 Outputs]
+    B --> C[RQ1: Rating Diff → Win Prob + CI]
+    B --> D[RQ2: Opening Strategy → Win Rate + significance]
+    B --> E[RQ2b: ECO Family Analysis]
+    B --> F[RQ3: Victory Type → Duration + SE]
+    B --> G[RQ4: Rated vs Non-Rated + t-test + chi-square]
+    B --> H[RQ5: Time Control → Length]
+    B --> I[RQ6: Opening Depth → Win Rate + CI]
+    B --> J[RQ7: ML Models + interpretability]
 ```
 
-> The diagram above captures the full analysis path from data import to final results.
+## Analytical Questions
 
-## 📌 Output Files
+### RQ1: Rating Difference → Win Probability
 
-The notebook produces the following CSV tables and figure exports:
+Bins games by `(white_rating - black_rating)`. Reports 95% Clopper-Pearson confidence intervals per bin. Bins: `<-200`, `-200 to 0`, `0 to 200`, `>200`.
 
-- `outputs/tables/RQ1_table.csv`
-- `outputs/tables/RQ2_openings.csv`
-- `outputs/tables/RQ3_duration.csv`
-- `outputs/tables/RQ4_rated.csv`
-- `outputs/tables/RQ4_win_distribution.csv`
-- `outputs/tables/RQ5_time_control.csv`
-- `outputs/tables/RQ6_opening_ply.csv`
-- `outputs/tables/RQ7_model.csv`
+### RQ2: Opening Strategy → White Win Rate
 
-- `outputs/figures/RQ1_figure.pdf`
-- `outputs/figures/RQ2_figure.pdf`
-- `outputs/figures/RQ3_figure.pdf`
-- `outputs/figures/RQ4_figure.pdf`
-- `outputs/figures/RQ4_win_dist.pdf`
-- `outputs/figures/RQ5_duration.pdf`
-- `outputs/figures/RQ6_figure.pdf`
-- `outputs/figures/RQ7_figure.pdf`
+Groups by `opening_name`, filters openings with >=30 games, ranks top 10. Each opening is tested against the overall mean with a binomial test; significant results (p < 0.05) are highlighted.
 
-## 🧠 Analytical Questions Covered
+### RQ2b: ECO Opening Family Analysis
 
-1. **RQ1:** How does rating difference affect White win probability?
-2. **RQ2:** Which opening strategies yield the best White win rates?
-3. **RQ3:** How long do games last, on average, by victory type?
-4. **RQ4:** How do rated and non-rated games differ in length and win distribution?
-5. **RQ5:** Which time controls correspond to longer games?
-6. **RQ6:** How does opening ply depth impact White win rate?
-7. **RQ7:** Which model performs better: Random Forest or Logistic Regression?
+Groups by ECO code family (A = Flank, B = Semi-Open, C = Open, D = Closed, E = Indian) and compares White win rates across families.
 
-## 🔧 Reproduce Locally
+### RQ3: Victory Type → Game Duration
 
-### 1. Install dependencies
+Computes mean turns per `victory_status` with standard error bars.
 
-```bash
-pip install pandas numpy matplotlib scikit-learn
-```
+### RQ4: Rated vs Non-Rated
 
-### 2. Open the notebook
+Welch's t-test and Mann-Whitney U test compare turn counts. Chi-square test compares win distributions between rated and unrated games.
 
-Open `Jordan Chess data sets.ipynb` in Jupyter or VS Code and run all cells.
+### RQ5: Time Control → Game Length
 
-### 3. Adjust the dataset path if needed
+Groups by `increment_code`, filters time controls with >=30 games, ranks top 10 by average turns.
 
-If you do not have the Kaggle dataset mounted at `/kaggle/input/...`, update the notebook path in the first data-loading cell to the local CSV file location.
+### RQ6: Opening Depth → White Win Rate
 
-### 4. Run the notebook
+Groups by `opening_ply`, filters depths with >=30 games, plots White win rate with 95% CI band.
 
-Execute every cell to regenerate the outputs in `outputs/tables/` and `outputs/figures/`.
+### RQ7: Model Comparison & Interpretability
 
-## ✅ Model Comparison
+Trains three classifiers on `[white_rating, black_rating, rating_diff, opening_ply]` to predict `winner` (white/black/draw):
 
-The notebook trains two classification models on the features:
-- `white_rating`
-- `black_rating`
-- `opening_ply`
+| Model | Metrics |
+|---|---|
+| Logistic Regression (scaled) | 5-fold CV, test accuracy, per-class F1 |
+| Random Forest (200 trees) | 5-fold CV, test accuracy, feature importance |
+| Gradient Boosting (200 trees) | 5-fold CV, test accuracy, feature importance |
 
-Models compared:
-- `RandomForestClassifier`
-- `LogisticRegression`
+All models use `StandardScaler` via `Pipeline`, stratified 80/20 split. Outputs include confusion matrices, classification reports, and feature importance plots.
 
-The comparison is stored in `outputs/tables/RQ7_model.csv` and visualized in `outputs/figures/RQ7_figure.pdf`.
+## Key Improvements Over Original Notebook
+
+- **Statistical rigor** — confidence intervals, binomial tests, t-tests, Mann-Whitney U, chi-square
+- **Sample thresholds** — >=30 games per group to avoid small-sample bias
+- **Extended rating bins** — `(-inf, inf)` edges cover all games
+- **Model interpretability** — confusion matrices, classification reports, feature importance
+- **ECO family analysis** — broader opening grouping beyond individual names
+- **Time control parsing** — `increment_code` split into `base_time` and `increment` numeric columns
+- **Modular package** — reusable functions, clean separation of concerns
+- **Local/Kaggle compatibility** — auto-detects dataset path
+- **Jupyter notebook** — interactive version with markdown explanations
+- **Pinned dependencies** — `requirements.txt` with minimum versions
+- **Clean repo** — `.gitignore` excludes outputs, data, and artifacts
